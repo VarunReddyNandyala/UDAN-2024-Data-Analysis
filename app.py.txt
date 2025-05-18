@@ -1,0 +1,38 @@
+# app.py
+import streamlit as st
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load data
+routes = pd.read_csv("data/processed/cleaned_routes.csv")
+projects = pd.read_csv("data/processed/cleaned_projects.csv")
+funding = pd.read_csv("data/processed/cleaned_funding.csv")
+
+st.title("✈️ UDAN 2024 Dashboard – Regional Air Connectivity Analysis")
+
+# Section: Valid Routes
+st.subheader("📍 Top States by Valid Routes")
+top_states = routes.groupby("state_ut")["valid_routes"].sum().sort_values(ascending=False).head(10)
+fig, ax = plt.subplots()
+sns.barplot(x=top_states.values, y=top_states.index, ax=ax, palette="Blues_r")
+st.pyplot(fig)
+
+# Section: Budget Utilization
+st.subheader("💰 Top Airports by Budget Utilization")
+top_utilized = funding.sort_values("utilization_pct", ascending=False).dropna(subset=["utilization_pct"]).head(10)
+fig2, ax2 = plt.subplots()
+sns.barplot(data=top_utilized, x="utilization_pct", y="airport", ax=ax2, palette="viridis")
+st.pyplot(fig2)
+
+# Section: Project Status
+st.subheader("📊 Project Status Distribution")
+status_counts = projects["project_status"].value_counts()
+fig3, ax3 = plt.subplots()
+status_counts.plot.pie(autopct="%1.1f%%", startangle=90, ax=ax3)
+ax3.set_ylabel("")
+st.pyplot(fig3)
+
+# Footer
+st.markdown("---")
+st.markdown("Made with ❤️ using Streamlit | Powered by Open Government Data (India)")

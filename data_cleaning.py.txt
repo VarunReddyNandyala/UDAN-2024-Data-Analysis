@@ -1,0 +1,37 @@
+import pandas as pd
+import os
+
+RAW_DIR = "../data/raw/"
+PROCESSED_DIR = "../data/processed/"
+
+def clean_routes_data(filename):
+    df = pd.read_csv(os.path.join(RAW_DIR, filename))
+    df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
+    df.rename(columns={"number_of_valid_routes": "valid_routes"}, inplace=True)
+    df.dropna(subset=["state_ut", "valid_routes"], inplace=True)
+    df.to_csv(os.path.join(PROCESSED_DIR, "cleaned_routes.csv"), index=False)
+    return df
+
+def clean_projects_data(filename):
+    df = pd.read_csv(os.path.join(RAW_DIR, filename))
+    df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
+    df.dropna(subset=["state_ut", "project_status"], inplace=True)
+    df.to_csv(os.path.join(PROCESSED_DIR, "cleaned_projects.csv"), index=False)
+    return df
+
+def clean_funding_data(filename):
+    df = pd.read_csv(os.path.join(RAW_DIR, filename))
+    df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_')
+    df["amount_allocated_in_crore"] = pd.to_numeric(df["amount_allocated_in_crore"], errors="coerce")
+    df["amount_spent_in_crore"] = pd.to_numeric(df["amount_spent_in_crore"], errors="coerce")
+    df["utilization_pct"] = (df["amount_spent_in_crore"] / df["amount_allocated_in_crore"]) * 100
+    df.to_csv(os.path.join(PROCESSED_DIR, "cleaned_funding.csv"), index=False)
+    return df
+
+def main():
+    clean_routes_data("udan_routes.csv")
+    clean_projects_data("udan_projects.csv")
+    clean_funding_data("udan_funding.csv")
+
+if __name__ == "__main__":
+    main()
